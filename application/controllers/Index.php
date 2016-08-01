@@ -14,9 +14,10 @@ class IndexController extends AbstractController {
     protected $tpl = 'index/index.phtml';
     
 	public function indexAction($name = "Stranger") {
-	    
+	    $data = array();
 		$get = $this->getRequest()->getQuery("name", "aaa");
-        
-		$this->assign(array('name' => $get));
+		$data['name'] = $get;
+		$this->assign($data);
+		return $this->end();
 	}
 }

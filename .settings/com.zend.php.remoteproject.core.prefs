@@ -1,7 +1,7 @@
 LaunchURL=http\://server/folder
 Save\ Mode=ON_SAVE
-SelectedHostGUID=0fc60282-15b8-47b4-a8e0-e5b690a956e1
+SelectedHostGUID=de0a13dd-a777-4817-a607-1af574070df6
 UploadFolder=/
 eclipse.preferences.version=1
 isLocalProjectEnabled=false
-isRemoteProjectEnabled=false
+isRemoteProjectEnabled=true

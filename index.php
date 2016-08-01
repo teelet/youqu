@@ -9,6 +9,8 @@ header("Pragma: no-cache");
 
 define('APPLICATION_PATH', dirname(__FILE__));
 define('TPL_PATH', APPLICATION_PATH  . '/application/views');
+define('IMG_PATH', $_SERVER['SERVER_DATA_DIR'] . '/image');
+define('STATIC_SERVER', $_SERVER['SERVER_STATIC_DOMAIN']);
 
 $application = new Yaf_Application( APPLICATION_PATH . "/conf/application.ini");
 

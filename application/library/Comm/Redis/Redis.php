@@ -16,7 +16,7 @@ class Comm_Redis_Redis {
                 $redis = new Redis();
                 $redis->connect($host, $port);
                 self::$inst[$index] = $redis;
-            }else{echo 1;
+            }else{
                 $redis = self::$inst[$index];
             }
             return $redis;
@@ -97,6 +97,15 @@ class Comm_Redis_Redis {
         } catch (RedisException $e) {
             echo $e->getMessage();
         }
+    }
+    
+    public static function ttl(Redis $redis, $key) {
+        try {
+            $result = $redis->ttl($key);
+        } catch (RedisException $e) {
+            return false;
+        }
+        return $result;
     }
     
     public static function decr(Redis $redis, $key) {
@@ -201,6 +210,24 @@ class Comm_Redis_Redis {
         return $result;
     }
     
+    public static function zrank(Redis $redis, $key, $member) {
+        try {
+            $result = $redis->zrank($key, $member);
+        } catch (RedisException $e) {
+            return false;
+        }
+        return $result;
+    }
+    
+    public static function zrem(Redis $redis, $key, $member) {
+        try {
+            $result = $redis->zrem($key, $member);
+        } catch (RedisException $e) {
+            return false;
+        }
+        return $result;
+    }
+    
     public static function sadd(Redis $redis, $key, $member) {
         try {
             $result = $redis->sadd($key, $member);
@@ -245,6 +272,24 @@ class Comm_Redis_Redis {
     public static function lpush(Redis $redis, $key, $value) {
         try {
             $result = $redis->lpush($key, $value);
+        } catch (RedisException $e) {
+            return false;
+        }
+        return $result;
+    }
+    
+    public static function rpush(Redis $redis, $key, $value) {
+        try {
+            $result = $redis->rpush($key, $value);
+        } catch (RedisException $e) {
+            return false;
+        }
+        return $result;
+    }
+    
+    public static function lpop(Redis $redis, $key) {
+        try {
+            $result = $redis->lpop($key);
         } catch (RedisException $e) {
             return false;
         }

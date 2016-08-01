@@ -30,6 +30,6 @@ class Bootstrap extends Yaf_Bootstrap_Abstract{
 	
 	public function _initView(Yaf_Dispatcher $dispatcher){
 	    //关闭自动渲染, 因为我们都是自己主动调用视图的render
-	    $dispatcher->disableView();
+	    //$dispatcher->disableView();
 	}
 }
