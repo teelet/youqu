@@ -20,10 +20,11 @@ class Group_GrouphomeController extends AbstractController {
             //获取置顶帖子
             $blog_top = Blog_BlogModel::getBlogTop($this->param['g_g_id']);
             $uids = array(); 
+            $top = array();
             if(! empty($blog_top)){ //获取帖子的card
-                foreach ($blog_top as $key => $value){
+                foreach ($blog_top as $value){
                     $card = Blog_BlogModel::getBlogCard($value['bid']);
-                    $blog_top[$key] = array_merge($value, $card);
+                    $top[] = array_merge($value, $card);
                     $uids[] = $card['uid'];
                 }
             }
@@ -35,7 +36,7 @@ class Group_GrouphomeController extends AbstractController {
             
             $res = array(
                 'groupinfo' => array_merge($group_info, $group_action_count),
-                'topblog'   => $blog_top,
+                'topblog'   => $top,
                 'userinfo'  => $user_info
             );
             

@@ -10,15 +10,15 @@ class CurlController extends AbstractController {
 
     public function getAction(){
         
-        /*
+        
         //帖子正文
         $data = array(
             'uid'  => 1, //阅读者uid
             'buid' => 1, //帖子uid
-            'bid'  => 1  //帖子bid            
+            'bid'  => 10  //帖子bid              
         );
         $url = "http://i.youqu.intra.weibo.com/blog_detail";
-        */
+        
         
         /*
         //用户信息
@@ -106,7 +106,7 @@ class CurlController extends AbstractController {
         );
         $url = "http://i.youqu.intra.weibo.com/blog_getfavor"; 
         */
-        
+        /*
         //用户帖子列表
         $data = array(
             'g_g_id' => 1,
@@ -115,7 +115,7 @@ class CurlController extends AbstractController {
             'pagesize' => 10
         );
         $url = "http://i.youqu.intra.weibo.com/group_userblog";
-        
+        */
         
         $method = 'GET';
         $http = new Comm_HttpRequest();
@@ -219,10 +219,10 @@ class CurlController extends AbstractController {
         $url = "http://i.youqu.intra.weibo.com/blog_complain";
         */
         /*
-        //删除，加精，置顶
+        //置顶,加精，删除
         $data = array(
             'uid' => 1,
-            'bid' => 2,
+            'bid' => 5,
             'g_g_id' => 1,
             'type' => 3,//1 置顶， 2 加精， 3 删除
             'atime'     => date('Y-m-d H:i:s'),
@@ -230,14 +230,17 @@ class CurlController extends AbstractController {
         );
         $url = "http://i.youqu.intra.weibo.com/blog_manage";
         */
+        
         //更新帖子
         $data = array(
             'uid' => 1,
-            'bid' => 2,
-            'type' => 2,//1 更新标题， 2 更新正文
-            'content' => "啊啊啊啊啊啊"
+            'bid' => 4,
+            'type' => 2,//1 更新标题， 2 更新正文，3删除图片，4更新图片，5上传图片
+            'content' => "change content sss",
+            'imgId_del' => '7_8', //多个图片id用 ‘_’ 下划线分割
         );
         $url = "http://i.youqu.intra.weibo.com/blog_modify";
+        
         
         $method = 'POST';
         $http = new Comm_HttpRequest();

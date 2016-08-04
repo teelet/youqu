@@ -14,5 +14,6 @@ return array(
         'paramMsg'   => '参数有误',
         'netMsg'     => '网络异常',
         'againMsg'   => '重复操作',
+        'limitMsg'   => '次数限制',
     )
 );

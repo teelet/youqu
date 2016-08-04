@@ -29,10 +29,12 @@ class Blog_DetailController extends AbstractController {
             $blog['reply_num'] = Blog_BlogModel::getBlogActionCount($this->param['bid'])['reply_num'];
             //获取帖子的正文图
             $blog['images'] = array();
-            $image_list = Blog_BlogModel::getBlogImage($this->param['bid']);
-            if(! empty($image_list)){
-                foreach ($image_list as $value){
-                    $blog['images'][] = $value['url_2'];
+            if($blog['pic_num'] > 0){
+                $image_list = Blog_BlogModel::getBlogImage($this->param['bid']);
+                if(! empty($image_list)){
+                    foreach ($image_list as $value){
+                        $blog['images'][$value['b_i_id']] = $value['url_2'];
+                    }
                 }
             }
             //操作成功

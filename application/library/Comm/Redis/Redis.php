@@ -103,7 +103,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->ttl($key);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -112,7 +112,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->decr($key);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -121,7 +121,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->decrBy($key, $offset);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -130,7 +130,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->incr($key);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -139,7 +139,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->incrBy($key, $offset);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -148,7 +148,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->zIncrBy($key, $offset, $member);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -157,19 +157,27 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->hincrBy($key, $field, $offset);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
     
     public static function scard(Redis $redis, $key) {
-        $result = $redis->scard($key);
+        try {
+            $result = $redis->scard($key);
+        } catch (RedisException $e) {
+            echo $e->getMessage();
+        }
         return $result;
     }
     
     public static function zscore(Redis $redis, $key, $member) {
-        $score = $redis->zscore($key, $member);
-        return $score;
+        try {
+            $result = $redis->zscore($key, $member);
+        } catch (RedisException $e) {
+            echo $e->getMessage();
+        }
+        return $result;
     }
     
     public static function zrevrank(Redis $redis, $key, $member) {
@@ -178,7 +186,11 @@ class Comm_Redis_Redis {
     }
     
     public static function zcard(Redis $redis, $key) {
-        $result = $redis->zcard($key);
+        try {
+            $result = $redis->zcard($key);
+        } catch (RedisException $e) {
+            echo $e->getMessage();
+        }
         return $result;
     }
     
@@ -186,18 +198,26 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->zcount($key, $min, $max);
         } catch (RedisException $e) {
-            return 0;
+            echo $e->getMessage();
         }
         return $result;
     }
     
     public static function zrange(Redis $redis, $key, $start, $end, $withscores = true) {
-        $result = $redis->zRange($key, $start, $end, $withscores);
+        try {
+            $result = $redis->zRange($key, $start, $end, $withscores);
+        } catch (RedisException $e) {
+            echo $e->getMessage();
+        }
         return $result;
     }
     
     public static function zrevrange(Redis $redis, $key, $start, $end, $withscores = true) {
-        $result = $redis->zRevRange($key, $start, $end, $withscores);
+        try {
+            $result = $redis->zRevRange($key, $start, $end, $withscores);
+        } catch (RedisException $e) {
+            echo $e->getMessage();
+        }
         return $result;
     }
     
@@ -205,7 +225,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->zadd($key, $score, $member);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -214,7 +234,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->zrank($key, $member);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -223,7 +243,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->zrem($key, $member);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -232,7 +252,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->sadd($key, $member);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -241,7 +261,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->sremove($key, $member);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -250,7 +270,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->spop($key);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -259,13 +279,26 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->srandmember($key);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
     
     public static function smembers(Redis $redis, $key) {
-        $result = $redis->smembers($key);
+        try {
+            $result = $redis->smembers($key);
+        } catch (RedisException $e) {
+            echo $e->getMessage();
+        }
+        return $result;
+    }
+    
+    public static function lrange(Redis $redis, $key, $start, $end) {
+        try {
+            $result = $redis->lrange($key, $start, $end);
+        } catch (RedisException $e) {
+            echo $e->getMessage();
+        }
         return $result;
     }
     
@@ -273,7 +306,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->lpush($key, $value);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -282,7 +315,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->rpush($key, $value);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -291,7 +324,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->lpop($key);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
@@ -300,13 +333,17 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->rpop($key);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }
     
     public static function info(Redis $redis) {
-        $result = $redis->info();
+        try {
+            $result = $redis->info();
+        } catch (RedisException $e) {
+            echo $e->getMessage();
+        }
         return $result;
     }
     
@@ -314,7 +351,7 @@ class Comm_Redis_Redis {
         try {
             $result = $redis->del($key);
         } catch (RedisException $e) {
-            return false;
+            echo $e->getMessage();
         }
         return $result;
     }

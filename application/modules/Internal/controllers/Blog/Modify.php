@@ -8,13 +8,19 @@ class Blog_ModifyController extends AbstractController {
     
     public function indexAction() {
         //获取参数
-        $this->param['bid']      = (int) Comm_Context::form('bid', 0);  //帖子bid
-        $this->param['uid']      = (int) Comm_Context::form('uid', 0);
-        $this->param['type']     = (int)Comm_Context::form('type', 0); //1 更新标题， 2 正文
-        $this->param['content']  = Comm_Context::form('content', '');
+        $this->param['bid']       = (int) Comm_Context::form('bid', 0);  //帖子bid
+        $this->param['uid']       = (int) Comm_Context::form('uid', 0);
+        $this->param['type']      = (int)Comm_Context::form('type', 0); //1 更新标题， 2 正文，3删除图片，4更新图片，5上传图片
+        $this->param['content']   = Comm_Context::form('content', '');
+        $this->param['imgId_del'] = Comm_Context::form('imgId_del', '');
         //参数检查
         if($this->checkParam()){
-            $res = Blog_BlogModel::modify($this->param['uid'], $this->param['bid'], $this->param['type'], $this->param['content']);
+            if($this->param['type'] == 1 || $this->param['type'] == 2){
+                $res = Blog_BlogModel::modify($this->param['uid'], $this->param['bid'], $this->param['type'], $this->param['content']);
+            }elseif($this->param['type'] == 3){
+                $res = Blog_BlogModel::delBlogImg($this->param['bid'], array_unique(explode('_', $this->param['imgId_del'])));
+            }
+            
             if($res == 1){
                 $this->format(0);
             }else{

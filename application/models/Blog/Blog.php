@@ -257,8 +257,11 @@ class Blog_BlogModel {
             //获取数据库配置文件
             $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
             $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-            $blog = $instance->field('bid, type, show_index')->where('g_g_id = '.$g_g_id)->order(array('type' => 'asc', 'show_index' => 'asc'))->select('blog_top');
-            if(! empty($blog)){ //入redis
+            $res = $instance->field('bid, type, g_g_id, show_index')->where('g_g_id = '.$g_g_id)->order(array('type' => 'asc', 'show_index' => 'asc'))->select('blog_top');
+            if(! empty($res)){ //入redis
+                foreach ($res as $v){
+                    $blog[$v['bid']] = $v;
+                }
                 Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $g_g_id), $config_cache['expire'], json_encode($blog));
             }
         }
@@ -277,11 +280,12 @@ class Blog_BlogModel {
         $config_cache = Comm_Config::getIni('sprintf.blog.content');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
         $blog = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)), true);
+        
         if(! $blog){
             //获取数据库配置文件
             $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
             $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-            $sql = 'select a.bid,a.type, a.uid, a.pic_num, a.title, a.content, a.address, a.g_g_id, a.atime, b.name as g_g_name from blog a inner join game_group b on a.g_g_id = b.g_g_id where a.status = 0 and a.bid = '.$bid.' limit 1';
+            $sql = 'select a.bid,a.type, a.uid, a.pic_num, a.title, a.content, a.address, a.status, a.g_g_id, a.atime, b.name as g_g_name from blog a inner join game_group b on a.g_g_id = b.g_g_id where a.bid = '.$bid.' limit 1';
             $blog = $instance->doSql($sql)[0];
             if(! empty($blog)){
                 //入redis
@@ -304,11 +308,14 @@ class Blog_BlogModel {
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
         $card = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)), true);
         if(! $card){
-            //获取数据库配置文件
-            $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
-            $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-            $card = $instance->field('uid, bid, title, type')->where('bid = '.$bid)->limit(1)->select('blog')[0];
-            if(! empty($card)){
+            $blog = self::getBlogDetail($bid);
+            if($blog){
+                $card = array(
+                    'uid'   => $blog['uid'],
+                    'bid'   => $blog['bid'],
+                    'type'  => $blog['type'],
+                    'title' => $blog['title'],
+                );
                 //入redis
                 Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($card));
             }
@@ -332,8 +339,12 @@ class Blog_BlogModel {
                 //获取数据库配置文件
                 $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
                 $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-                $imageInfo = $instance->field('*')->where("bid = $bid")->select('blog_images');
-                if(! empty($imageInfo)){
+                $info = $instance->field('*')->where("bid = $bid")->select('blog_images');
+                $imageInfo = array();
+                if(! empty($info)){
+                    foreach ($info as $v){
+                        $imageInfo[$v['b_i_id']] = $v;
+                    }
                     //入redis
                     Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($imageInfo));
                 }
@@ -541,47 +552,98 @@ class Blog_BlogModel {
     }
     
     /*
-     * 管理更新帖子
-     * type 1 更新标题， 2 更新正文
+     * 删除帖子图片
+     * imgIds 形如 array(1, 2, 3)
      */
-    public static function modify($uid, $bid, $type, $content){
-        if(empty($uid) || empty($bid) || empty($type)){
+    public static function delBlogImg($bid, array $imgIds){
+        if(empty($bid) || empty($imgIds)){
             return false;
         }
-        //更新redis
+        
         $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
-        //----------------
+        //更新redis图片缓存信息
+        $config_cache = Comm_Config::getIni('sprintf.blog.imageinfo');
+        $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        $imageInfo = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)), true);
+        if(! empty($imageInfo)){
+            foreach ($imgIds as $v){
+                if(isset($imageInfo[$v])){
+                    unset($imageInfo[$v]);
+                }else{
+                    unset($imgIds[$v]);
+                }
+            }
+            //入redis
+            Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($imageInfo));
+        }
+        
+        //更新redis的blog正文
+        $count = count($imgIds);
         $config_cache = Comm_Config::getIni('sprintf.blog.content');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
-        $a = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)),true);
-        if($a){
-            if($type == 1){
-                $a['title'] = $content;
-            }else{
-                $a['content'] = $content;
-            }
+        $blog = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)),true);
+        if(! empty($blog)){
+            $blog['pic_num'] = $blog['pic_num'] - $count;
+            Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($blog));
         }
-        Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($a));
-        //----------------
-        if($type == 1){
-            $config_cache = Comm_Config::getIni('sprintf.blog.blog_card');
-            $card = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)), true);
-            if($card){
-                $card['title'] = $content;
-            }
+        
+        //更新blog的db
+        $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.write');
+        $instance = Comm_Db_Handler::getInstance(self::$db, $config);
+        $sql = 'update blog set pic_num = pic_num - '.$count.' where bid = '.$bid;
+        $instance->doSql($sql);
+        //更新blog_images 的db
+        $sql = 'delete from blog_images where bid = '.$bid.' and b_i_id in ('.implode(',', $imgIds).')';
+        $instance->doSql($sql);
+        return 1;
+    }
+    
+    /*
+     * 修改帖子字段
+     * 修改field字段的内容为content
+     */
+    public function updateBlog($bid, $field, $content){
+        if(empty($bid) || empty($field)){
+            return false;
+        }
+        //更新redis的blog正文
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+        $config_cache = Comm_Config::getIni('sprintf.blog.content');
+        $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        $blog = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)),true);
+        if(! empty($blog)){
+            $blog[$field] = $content;
+            Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($blog));
+        }
+        //更新redis的blog的card(bid,uid,type,title)
+        $config_cache = Comm_Config::getIni('sprintf.blog.blog_card');
+        $card = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)),true);
+        if(isset($card[$field])){
+            $card[$field] = $content;
             Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($card));
         }
         
         //更新db
         $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.write');
         $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-        if($type == 1){
-            $instance->where(array('bid'=>$bid))->update('blog',array('title'=>$content));
-        }else{
-            $instance->where(array('bid'=>$bid))->update('blog',array('content'=>$content));
-        }
+        $instance->where(array('bid' => $bid))->update('blog',array($field => $content));
         return 1;
-        
+    }
+    
+    /*
+     * 管理员更新帖子
+     * type 1 更新标题， 2 更新正文
+     */
+    public static function modify($uid, $bid, $type, $content){
+        if(empty($uid) || empty($bid) || empty($type)){
+            return false;
+        }
+        if($type == 1){
+            $field = 'title';
+        }elseif($type == 2){
+            $field = 'content';
+        }
+        return self::updateBlog($bid, $field, $content);    
     }       
     /*
      * 管理员操作（置顶，加精，删除）
@@ -598,21 +660,39 @@ class Blog_BlogModel {
         }
         switch ($type){
             case 1 :
-                $res = self::addTop($g_g_id, $bid, $uid);
+                $res = self::addTop($g_g_id, $bid, $uid, $atime);
                 break;
             case 2 :
-                $res = self::addGreat($g_g_id, $bid, $uid);
+                $res = self::addGreat($g_g_id, $bid, $uid, $atime);
                 break;
             case 3 :
-                $res = self::delBlog($g_g_id, $bid, $uid);
+                $res = self::delBlog($g_g_id, $bid, $uid, $atime);
                 break;
         }
+        self::managerLogAdd($g_g_id, $bid, $uid, $type);
         return $res;
     }
     /*
+     * 管理员操作log
+     * type 1 置顶， 2 加精， 3 删除
+     */
+    public static function managerLogAdd($g_g_id, $bid, $uid, $type){
+        //获取数据库配置文件
+        $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
+        $instance = Comm_Db_Handler::getInstance(self::$db, $config);
+        $field = array(
+            'g_g_id' => $g_g_id,
+            'bid'    => $bid,
+            'uid'    => $uid,
+            'type'   => $type
+        );
+        $instance->insert('game_group_manager_log', $field);
+    }
+    
+    /*
      * 删除blog
      */
-    public static function delBlog($g_g_id, $bid, $uid){
+    public static function delBlog($g_g_id, $bid, $uid, $atime){
         if(empty($uid) || empty($bid) || empty($g_g_id)){
             return false;
         }
@@ -620,14 +700,14 @@ class Blog_BlogModel {
         $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
         $config_cache = Comm_Config::getIni('sprintf.group.group.blog_list.all');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        
         Comm_Redis_Redis::zrem($redis, sprintf($config_cache['key'], $g_g_id), $bid);
         $config_cache = Comm_Config::getIni('sprintf.group.group.blog_list.great');
         Comm_Redis_Redis::zrem($redis, sprintf($config_cache['key'], $g_g_id), $bid);
         
-        //更新db
-        $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.write');
-        $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-        $instance->where(array('bid'=>$bid))->update('blog',array('status'=>1));
+        self::updateBlog($bid, 'status', 1);
+        
+        self::setBlogManagerLog($bid, $uid, 3, $atime);
         
         return 1;
     }
@@ -636,21 +716,59 @@ class Blog_BlogModel {
      * 加精操作
      * uid 管理员id
      */
-    public static function addGreat($g_g_id, $bid, $uid){
+    public static function addGreat($g_g_id, $bid, $uid, $atime){
         if(empty($uid) || empty($bid) || empty($g_g_id)){
             return false;
         }
+        
+        self::updateBlog($bid, 'type', 1);
+        self::setBlogManagerLog($bid, $uid, 2, $atime);
+        //若在置顶库中，则更新置顶数据
+        $top = self::getBlogTop($g_g_id);
+        if(isset($top[$bid])){
+            $top[$bid]['type'] = 1;
+            //更新redis
+            $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+            $config_cache = Comm_Config::getIni('sprintf.blog.blog_top');
+            $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+            Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $g_g_id), $config_cache['expire'], json_encode($top));
+        
+            //更新db
+            //获取数据库配置文件
+            $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.write');
+            $instance = Comm_Db_Handler::getInstance(self::$db, $config);
+            $instance->where(array('g_g_id' => $g_g_id, 'bid' =>$bid))->update('blog_top', array('type' => 1));
+        }
+        
+        return 1;
+    }
+    
+    /*
+     * 置顶操作
+     * uid 管理员id
+     */
+    public static function addTop($g_g_id, $bid, $uid, $atime){
+        if(empty($uid) || empty($bid) || empty($g_g_id)){
+            return false;
+        }
+        //获取帖子类型 0 普通帖 1 精华帖
+        $type = self::getBlogCard($bid)['type'];
         //更新redis
         $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
         $config_cache = Comm_Config::getIni('sprintf.blog.blog_top');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
         $blog = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $g_g_id)), true);
         $a = array(
-            'bid' => $bid,
-            'type' => 1
+            'bid'        => $bid,
+            'type'       => $type,
+            'g_g_id'     => $g_g_id,
+            'show_index' => 0
         );
-        $blog[] = $a;
+        $blog[$bid] = $a;
         Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $g_g_id), $config_cache['expire'], json_encode($blog));
+        
+        self::setBlogManagerLog($bid, $uid, 1, $atime);
+        
         //更新db
         //获取数据库配置文件
         $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.write');
@@ -660,30 +778,33 @@ class Blog_BlogModel {
     }
     
     /*
-     * 置顶操作
-     * uid 管理员id
+     * 获取帖子别修改的日志
      */
-    public static function addTop($g_g_id, $bid, $uid){
-        if(empty($uid) || empty($bid) || empty($g_g_id)){
+    public static function getBlogManagerLog($bid){
+        if(empty($bid)){
             return false;
         }
-        //更新redis
-        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
-        $config_cache = Comm_Config::getIni('sprintf.blog.blog_top');
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.read');
+        $config_cache = Comm_Config::getIni('sprintf.blog.manager_log');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
-        $blog = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $g_g_id)), true);
-        $a = array(
-            'bid' => $bid,
-            'type' => 0
-        );
-        $blog[] = $a;
-        Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $g_g_id), $config_cache['expire'], json_encode($blog));
-        //更新db
-        //获取数据库配置文件
-        $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.write');
-        $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-        $instance->insert('blog_top', $a);
-        return 1;
+        $log = Comm_Redis_Redis::lrange($redis, sprintf($config_cache['key'], $bid), 0, -1);
+        return $log;
+    }
+    
+    
+    /*
+     * 更新帖子别修改的日志
+     * type 1 置顶， 2 加精， 3 删除，4 修改
+     */
+    public static function setBlogManagerLog($bid, $uid, $type, $time){
+        if(empty($bid) || empty($uid) || empty($type)){
+            return false;
+        }
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+        $config_cache = Comm_Config::getIni('sprintf.blog.manager_log');
+        $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        $string = sprintf(Comm_Config::getIni('sprintf.blog.manage_string.name'), $bid, $uid, $type, $time);
+        Comm_Redis_Redis::lpush($redis, sprintf($config_cache['key'], $bid), $string);
     }
     
     /*
@@ -700,7 +821,7 @@ class Blog_BlogModel {
         $res1 = $instance->field('operate_time')->where('g_g_id = '.$g_g_id.' and uid = '.$uid)->limit(1)->select('game_group_manager')[0]['operate_time'];
         //管理员已经操作的次数
         $time = date('Y-m-d', strtotime($time));
-        $res2 = $instance->field('count(id) as count')->where('g_g_id = '.$g_g_id.' and uid = '.$uid.' and atime > '.$time)->select('game_group_manager_log')[0]['count'];
+        $res2 = $instance->field('count(id) as count')->where('g_g_id = '.$g_g_id.' and uid = '.$uid.' and atime > "'.$time.'"')->select('game_group_manager_log')[0]['count'];
         
         return array(
             'all'  => $res1,
@@ -710,22 +831,3 @@ class Blog_BlogModel {
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

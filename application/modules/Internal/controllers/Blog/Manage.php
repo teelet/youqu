@@ -20,6 +20,8 @@ class Blog_ManageController extends AbstractController {
             $res = Blog_BlogModel::manage($this->param['uid'], $this->param['g_g_id'], $this->param['bid'], $this->param['type'], $this->param['atime'], $this->param['ctime']);
             if($res == 1){
                 $this->format(0);
+            }elseif($res == -1){
+                $this->format(5);
             }else{
                 $this->format(3);
             }

@@ -48,7 +48,7 @@ class AbstractController extends Yaf_Controller_Abstract {
     
     /*
      * 格式化结果
-     * status 报告信息基本 0 成功， 1 失败， 2 参数有误， 3 网络问题, 4 用户重复操作
+     * status 报告信息基本 0 成功， 1 失败， 2 参数有误， 3 网络问题， 4 用户重复操作， 5 超出操作次数
      */
     public function format($status = 0){
         switch ($status) {
@@ -71,6 +71,10 @@ class AbstractController extends Yaf_Controller_Abstract {
             case 4 :
                 $this->data['statusCode'] = Comm_Config::getPhpConf('error/iErrorMsg.statusCode.error');
                 $this->data['message'] = Comm_Config::getPhpConf('error/iErrorMsg.message.againMsg');
+                break;
+            case 5 :
+                $this->data['statusCode'] = Comm_Config::getPhpConf('error/iErrorMsg.statusCode.error');
+                $this->data['message'] = Comm_Config::getPhpConf('error/iErrorMsg.message.limitMsg');
                 break;
         }
     }
