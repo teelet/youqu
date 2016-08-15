@@ -48,33 +48,84 @@ class Blog_PostblogreplyController extends AbstractController {
                     }
                 }
                 
-                //回帖内容入库 返回b_c_id 
-                $b_c_id = Blog_BlogModel::insertBlogReply($this->param, 1);
+                //回帖内容入库
+                //从发号器中获取预先给定的b_c_id，便于后期异步入库
+                $b_c_id = IndexmakerModel::makeIndex(4);
                 if(! $b_c_id){//网络异常
                     $this->format(3);
                     $this->jsonResult($this->data);
                     return $this->end();
                 }
+                $this->param['b_c_id'] = $b_c_id;
+                Blog_BlogModel::insertBlogReply($this->param, 1);
+                //回帖内容人redis
+                Blog_ReplyModel::setBlogCommentBaseInfo($this->param);
+                //初始化回帖转评赞数
+                Blog_BlogModel::initBlogCommentActionCount($b_c_id);
                 
                 //回帖图片入库
                 if(count($pic_urls) > 0){
-                    $res = Blog_BlogModel::insertBlogReplyImage($this->param['bid'], $b_c_id, $pic_urls);
+                    $b_c_i_id_end = IndexmakerModel::makeIndex(5, $this->param['pic_num']);
+                    $b_c_i_id_start = $b_c_i_id_end - $this->param['pic_num'] + 1;
+                    if(! $b_c_i_id_end){//网络异常
+                        $this->format(3);
+                        $this->jsonResult($this->data);
+                        return $this->end();
+                    }
+                    $urls = array();
+                    foreach ($pic_urls as $url){
+                        $urls[$b_c_i_id_start] = $url;
+                        $b_c_i_id_start++;
+                    }
+                    $res = Blog_BlogModel::insertBlogReplyImage($this->param['bid'], $b_c_id, $urls);
+                    
                     if(! $res){//网络异常
                         $this->format(3);
                         $this->jsonResult($this->data);
                         return $this->end();
                     }
+                    
+                    //拼接images的redis缓存
+                    $image_info = array();
+                    foreach ($urls as $b_c_i_id => $url){
+                        $image_info[$b_c_i_id] = array(
+                            'b_c_i_id'  => $b_c_i_id,
+                            'bid'       => $this->param['bid'],
+                            'b_c_id'    => $b_c_id,
+                            'url_0'     => '',
+                            'url_1'     => '',
+                            'url_2'     => $url,
+                            'atime'   => $this->param['atime'],
+                            'ctime'   => $this->param['ctime']
+                        );
+                    }
+                    Blog_ReplyModel::setBlogCommentImage($image_info);
                 }
                 
             }elseif($this->param['type'] == 2){ //回复
-                $this->param['b_c_c_id'] = Comm_Context::form('b_c_c_id', 0); //被回复的b_c_c_id
+                $this->param['f_b_c_c_id'] = Comm_Context::form('b_c_c_id', 0); //被回复的b_c_c_id
                 $this->param['touid'] = Comm_Context::form('touid', 0); //被回复的uid
-                $b_c_c_id = Blog_BlogModel::insertBlogReply($this->param, 2);
+                $b_c_c_id = IndexmakerModel::makeIndex(6);
                 if(! $b_c_c_id){//网络异常
                     $this->format(3);
                     $this->jsonResult($this->data);
                     return $this->end();
                 }
+                $this->param['b_c_c_id'] = $b_c_c_id;
+                Blog_BlogModel::insertBlogReply($this->param, 2);
+                //拼接回复入redis
+                $reply = array(
+                    'b_c_c_id'   => $b_c_c_id,
+                    'f_b_c_c_id' => $this->param['f_b_c_c_id'],
+                    'b_c_id'     => $this->param['b_c_id'],
+                    'bid'        => $this->param['bid'],
+                    'uid'        => $this->param['uid'],
+                    'touid'      => $this->param['touid'],
+                    'content'    => $this->param['content'],
+                    'atime'      => $this->param['atime'],
+                    'ctime'      => $this->param['ctime']
+                );
+                Blog_ReplyModel::setBlogCommentReplyBaseInfo($reply);
             }
             
             $this->format(0);

@@ -14,13 +14,13 @@ class User_UserModel {
     public static function getUserInfo($uid){
         if(! is_numeric($uid) || $uid <= 0){return  false;}
         //先从redis里面取
-        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.read');
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
         $config_cache = Comm_Config::getIni('sprintf.user.userinfo');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
-        $userInfo = json_decode(Comm_Redis_Redis::mget($redis, sprintf($config_cache['key'], $uid)), true);
+        $userInfo = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $uid)), true);
         if(! $userInfo){//从db中取
             //获取数据库配置文件
-            $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.write');
+            $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
             $instance = Comm_Db_Handler::getInstance(self::$db, $config);
             $userInfo = $instance->field('*')->where("uid = $uid")->limit(1)->select('user')[0];
             if(! empty($userInfo)){

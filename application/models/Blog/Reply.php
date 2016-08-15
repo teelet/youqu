@@ -17,7 +17,7 @@ class Blog_ReplyModel {
         if(empty($bid)){
             return false;
         }
-        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.read');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
         if($uid != 0){  //查看指定用户的回帖
             //从redis中获取回帖的顺序
@@ -28,7 +28,6 @@ class Blog_ReplyModel {
             $config_cache = Comm_Config::getIni('sprintf.blog.comment.timeorder.bid');
             $list = Comm_Redis_Redis::zrange($redis, sprintf($config_cache['key'], $bid), $start, $start + $pagesize);
         }
-        
         if(empty($list)){
             return false;
         }else{ //取回帖的详细信息
@@ -56,7 +55,7 @@ class Blog_ReplyModel {
                     $imageinfo = self::getBlogCommentImage($v['b_c_id']);
                     if(! empty($imageinfo)){
                         foreach ($imageinfo as $image){
-                            $exsist[$k]['images'][] = $image['url_2'];
+                            $exsist[$k]['images'][$image['b_c_i_id']] = $image['url_2'];
                         }
                     }
                 }
@@ -68,7 +67,7 @@ class Blog_ReplyModel {
                 //获取回帖的回复信息
                 
                 if($count['reply_num'] > 0){
-                    $res = self::getBlogCommentReply($v['b_c_id'], 0, 10);
+                    $res = self::getBlogCommentReply($v['b_c_id'], 0, 2);
                     if(! empty($res)){
                         foreach ($res as $value){
                             $uids[] = $value['uid'];
@@ -112,16 +111,43 @@ class Blog_ReplyModel {
      * b_c_id  回帖的id
      */
     public static function getBlogCommentReply($b_c_id, $start = 0, $pagesize = 10){
-        //从redis中获取回帖的顺序
+        //从redis中获取回复的顺序
         $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
         $config_cache = Comm_Config::getIni('sprintf.blog.comment.timeorder.b_c_id');
-        $list = Comm_Redis_Redis::zrange($redis, sprintf($config_cache['key'], $b_c_id), $start, $start + $pagesize);
+        $list = Comm_Redis_Redis::zrange($redis, sprintf($config_cache['key'], $b_c_id), $start, $start + $pagesize - 1);
         if(! empty($list)){ //取回复的内容
             return self::getBlogCommentReplyBaseInfo(array_keys($list));
         }
         return false;
     }
+    
+    /*
+     *拼接回复入redis 
+     */
+    public static function setBlogCommentReplyBaseInfo(&$data){
+        if(empty($data)){
+            return false;
+        }
+        $field = array(
+            'b_c_c_id'   => $data['b_c_c_id'],
+            'f_b_c_c_id' => $data['f_b_c_c_id'],
+            'b_c_id'     => $data['b_c_id'],
+            'bid'        => $data['bid'],
+            'uid'        => $data['uid'],
+            'touid'      => $data['touid'],
+            'content'    => $data['content'],
+            'atime'      => $data['atime'],
+            'ctime'      => $data['ctime'],
+            'status'     => 0
+        );
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+        $config_cache = Comm_Config::getIni('sprintf.blog.comment.reply.content');
+        $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $data['b_c_c_id']), $config_cache['expire'], json_encode($field));
+    }
+    
+    
     /*
      * 回复的基本信息
      */
@@ -162,6 +188,29 @@ class Blog_ReplyModel {
         return $exsist;
     }
     
+    /*
+     * 拼接回帖入redis
+     */
+    public static function setBlogCommentBaseInfo(&$data){
+        if(empty($data)){
+            return false;
+        }
+        $field = array(
+            'b_c_id'  => $data['b_c_id'],
+            'bid'     => $data['bid'],
+            'uid'     => $data['uid'],
+            'pic_num' => $data['pic_num'],
+            'content' => $data['content'],
+            'atime'   => $data['atime'],
+            'ctime'   => $data['ctime'],
+            'status'  => 0
+        );
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+        $config_cache = Comm_Config::getIni('sprintf.blog.comment.content');
+        $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $data['b_c_id']), $config_cache['expire'], json_encode($field));
+        return 1;
+    }
     
     /*
      * 回帖的基本信息
@@ -187,7 +236,7 @@ class Blog_ReplyModel {
             //获取数据库配置文件
             $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
             $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-            $sql = 'select b_c_id, bid, uid, content, pic_num, atime, ctime from blog_comment where status = 0 and b_c_id in ('.implode(',', $notexsist).')';
+            $sql = 'select b_c_id, bid, uid, content, pic_num, atime, ctime from blog_comment where b_c_id in ('.implode(',', $notexsist).')';
             $res = $instance->doSql($sql);
             if($res){
                 foreach ($res as $k => $v){
@@ -202,6 +251,35 @@ class Blog_ReplyModel {
         return $exsist;
     }
     
+    /*
+     * 拼接回帖图片入redis
+     */
+    public static function setBlogCommentImage(&$data){
+        if(empty($data)){
+            return false;
+        }
+        $imageInfo = array();
+        $b_c_id = null;
+        foreach ($data as $b_i_id => $v){
+            $imageInfo[$b_i_id] = array(
+                'b_c_i_id'  => $v['b_c_i_id'],
+                'bid'       => $v['bid'],
+                'b_c_id'    => $v['b_c_id'],
+                'url_0'     => $v['url_0'],
+                'url_1'     => $v['url_1'],
+                'url_2'     => $v['url_2'],
+                'atime'     => $v['atime'],
+                'ctime'     => $v['ctime'],
+                'status'    => 0
+            );
+            $b_c_id = $v['b_c_id'];
+        }
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+        $config_cache = Comm_Config::getIni('sprintf.blog.comment.imageinfo');
+        $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $b_c_id), $config_cache['expire'], json_encode($imageInfo));
+    }
+    
     
     /*
      * 获取回帖的图片
@@ -211,7 +289,7 @@ class Blog_ReplyModel {
             return false;
         }
         //先从redis里面取
-        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.read');
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
         $config_cache = Comm_Config::getIni('sprintf.blog.comment.imageinfo');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
         $imageInfo = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $b_c_id)), true);
@@ -219,7 +297,7 @@ class Blog_ReplyModel {
             //获取数据库配置文件
             $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
             $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-            $imageInfo = $instance->field('*')->where("b_c_id = $b_c_id")->select('blog_comment_images');
+            $imageInfo = $instance->field('b_c_i_id, bid, b_c_id, url_0, url_1, url_2')->where("b_c_id = $b_c_id")->select('blog_comment_images');
             if(! empty($imageInfo)){
                 //入redis
                 Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $b_c_id), $config_cache['expire'], json_encode($imageInfo));
@@ -245,12 +323,11 @@ class Blog_ReplyModel {
         if($data['type'] == 1){ //给帖子点赞
             //入redis
             $config_cache = Comm_Config::getIni('sprintf.blog.favor');
-            Comm_Redis_Redis::zadd($redis, sprintf($config_cache['key'], $data['bid']), time(), $data['uid']);
             $a = Comm_Redis_Redis::zrank($redis, sprintf($config_cache['key'], $data['bid']), $data['uid']);
             if($a !== false){ //用户已赞
                 return -1;
-            
             }
+            Comm_Redis_Redis::zadd($redis, sprintf($config_cache['key'], $data['bid']), time(), $data['uid']);
             //点赞数 +1
             Blog_BlogModel::blogActionCountAdd($data['bid'], 0);
             
@@ -269,7 +346,6 @@ class Blog_ReplyModel {
             $a = Comm_Redis_Redis::zrank($redis, sprintf($config_cache['key'], $data['b_c_id']), $data['uid']);
             if($a !== false){ //用户已赞
                 return -1;
-                
             }
             Comm_Redis_Redis::zadd($redis, sprintf($config_cache['key'], $data['b_c_id']), time(), $data['uid']);
             //点赞数 +1

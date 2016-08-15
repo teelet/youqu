@@ -10,14 +10,21 @@ class Blog_ManageController extends AbstractController {
         //获取参数
         $this->param['bid']      = (int) Comm_Context::form('bid', 0);  //帖子bid
         $this->param['uid']      = (int) Comm_Context::form('uid', 0);
-        $this->param['g_g_id']      = (int) Comm_Context::form('g_g_id', 0);
-        $this->param['type']      = Comm_Context::form('type', 0); //1 置顶， 2 加精， 3 删除
-        $this->param['atime']   = Comm_Context::form('atime', date('Y-m-d H:i:s'));
-        $this->param['ctime']   = (int) Comm_Context::form('ctime', time());
+        $this->param['is_own']   = (int) Comm_Context::form('is_own', 0);  // 1 用户自己，0否
+        $this->param['g_g_id']   = (int) Comm_Context::form('g_g_id', 0);
+        $this->param['type']     = Comm_Context::form('type', 0); //1 置顶， 2 加精， 3 删除
+        $this->param['atime']    = Comm_Context::form('atime', date('Y-m-d H:i:s'));
+        $this->param['ctime']    = (int) Comm_Context::form('ctime', time());
         
         //参数检查
         if($this->checkParam()){
-            $res = Blog_BlogModel::manage($this->param['uid'], $this->param['g_g_id'], $this->param['bid'], $this->param['type'], $this->param['atime'], $this->param['ctime']);
+            
+            if($this->param['type'] == 3 && $this->param['is_own'] == 1){
+                $res = Blog_BlogModel::delBlog($this->param['g_g_id'], $this->param['bid'], $this->param['uid'], $this->param['atime'], 1);
+            }else{
+                $res = Blog_BlogModel::manage($this->param['uid'], $this->param['g_g_id'], $this->param['bid'], $this->param['type'], $this->param['atime'], $this->param['ctime']);
+            }
+            
             if($res == 1){
                 $this->format(0);
             }elseif($res == -1){

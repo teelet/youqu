@@ -45,22 +45,58 @@ class Blog_PostblogController extends AbstractController {
                     }
                 }
             }
-            //blog信息入库 返回bid
-            $bid = Blog_BlogModel::insertBlog($this->param);
+            
+            //blog信息入库
+            //从发号器中获取预先给定的bid，便于后期异步入库
+            $bid = IndexmakerModel::makeIndex(2);
             if(! $bid){//网络异常
                 $this->format(3);
                 $this->jsonResult($this->data);
                 return $this->end();
             }
+            $this->param['bid'] = $bid;
+            Blog_BlogModel::insertBlog($this->param);
             //图片入库
             if(count($pic_urls) > 0){
-                $res = Blog_BlogModel::insertBlogImage($bid, $pic_urls);
+                $b_i_id_end = IndexmakerModel::makeIndex(3, $this->param['pic_num']);
+                if(! $b_i_id_end){//网络异常
+                    $this->format(3);
+                    $this->jsonResult($this->data);
+                    return $this->end();
+                }
+                $b_i_id_start = $b_i_id_end - $this->param['pic_num'] + 1;
+                $urls = array();
+                foreach ($pic_urls as $url){
+                    $urls[$b_i_id_start] = $url;
+                    $b_i_id_start++;
+                }
+                $res = Blog_BlogModel::insertBlogImage($bid, $urls);
                 if(! $res){//网络异常
                     $this->format(3);
                     $this->jsonResult($this->data);
                     return $this->end();
                 }
+                //拼接images的redis缓存
+                $image_info = array();
+                foreach ($urls as $b_i_id => $url){
+                    $image_info[$b_i_id] = array(
+                        'b_i_id'  => $b_i_id,
+                        'bid'     => $bid,
+                        'url_0'   => '',
+                        'url_1'   => '',
+                        'url_2'   => $url,
+                        'atime'   => $this->param['atime'],
+                        'ctime'   => $this->param['ctime'],
+                        'summary' => ''
+                    );
+                }
+                Blog_BlogModel::setBlogImage($image_info);
             }
+            
+            //初始化帖子点赞，回帖数等
+            Blog_BlogModel::initBlogActionCount($bid);
+            //拼接blog的redis缓存
+            Blog_BlogModel::setBlogDetail($this->param); 
             //将bid入对应社区的redis集合中
             Blog_BlogModel::addToGroupBlog($this->param['g_g_id'], $bid);
             //将bid入对于社区用户的redis集合中

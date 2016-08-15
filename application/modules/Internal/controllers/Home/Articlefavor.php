@@ -4,22 +4,22 @@
  * shaohua
  */
 
-class Blog_FavorController extends AbstractController {
+class Home_ArticlefavorController extends AbstractController {
     
     public function indexAction() {
         //获取参数
-        $this->param['bid']      = (int) Comm_Context::form('bid', 0);  //帖子bid
-        $this->param['b_c_id']   = (int) Comm_Context::form('b_c_id', 0);  //回帖b_c_id
+        $this->param['aid']      = (int) Comm_Context::form('aid', 0);  //文章id
+        $this->param['a_c_id']   = (int) Comm_Context::form('a_c_id', 0);  //评论id
         $this->param['uid']      = (int) Comm_Context::form('uid', 0);
-        $this->param['type']     = (int) Comm_Context::form('type', 0);  //1 帖子点赞， 2 回帖点赞
-        $this->param['atime']   = Comm_Context::form('atime', date('Y-m-d H:i:s'));
-        $this->param['ctime']   = (int) Comm_Context::form('ctime', time());
+        $this->param['type']     = (int) Comm_Context::form('type', 0);  //1 文章点赞， 2 评论点赞
+        $this->param['atime']    = Comm_Context::form('atime', date('Y-m-d H:i:s'));
+        $this->param['ctime']    = (int) Comm_Context::form('ctime', time());
         //参数检查
         if($this->checkParam()){
-            if($this->param['type'] == 1){ //给帖子点赞
-                $res = Blog_ReplyModel::favor($this->param);
-            }else{ //给回帖点赞
-                $res = Blog_ReplyModel::favor($this->param);
+            if($this->param['type'] == 1){ //给文章点赞
+                $res = Article_ArticleModel::favor($this->param);
+            }else{ //给评论点赞
+                $res = Article_ArticleModel::favor($this->param);
             }
             
             if($res == 1){

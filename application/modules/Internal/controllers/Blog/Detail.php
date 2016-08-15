@@ -26,7 +26,8 @@ class Blog_DetailController extends AbstractController {
                 'summary' => $userinfo['summary']
             );
             //获取回帖数
-            $blog['reply_num'] = Blog_BlogModel::getBlogActionCount($this->param['bid'])['reply_num'];
+            $count = Blog_BlogModel::getBlogActionCount($this->param['bid']);
+            $blog['reply_num'] = $count['reply_num'] ? $count['reply_num'] : 0;
             //获取帖子的正文图
             $blog['images'] = array();
             if($blog['pic_num'] > 0){
@@ -37,6 +38,28 @@ class Blog_DetailController extends AbstractController {
                     }
                 }
             }
+            //获取帖子是否被管理员修改
+            $log = Blog_BlogModel::getBlogManagerLog($this->param['bid']);
+            if(count($log) > 0){
+                $log_last = explode('_', $log[0]);
+                $username = User_UserModel::getUserInfo($log_last[1])['nickname'];
+                $atime = $log_last[3];
+                $action = '修改';
+                //1 置顶， 2 加精， 3 删除，4 修改
+                switch ($log_last[2]){
+                    case 1 : $action = '置顶';
+                        break;
+                    case 2 : $action = '加精';
+                        break;
+                    case 3 : $action = '删除';
+                        break;
+                    case 4 : $action = '修改';
+                        break;
+                }
+                $msg = sprintf("管理员：%s 于 %s %s过", $username, $atime, $action);
+                $blog['action_log'] = $msg;
+            }
+            
             //操作成功
             $this->format(0);
             $this->data['results'] = $blog;

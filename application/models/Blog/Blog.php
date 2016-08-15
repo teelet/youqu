@@ -20,6 +20,7 @@ class Blog_BlogModel {
         $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.write');
         $instance = Comm_Db_Handler::getInstance(self::$db, $config);
         $field = array(
+            'bid'     => $data['bid'],
             'uid'     => $data['uid'],
             'g_g_id'  => $data['g_g_id'],
             'title'   => $data['title'],
@@ -31,10 +32,9 @@ class Blog_BlogModel {
         );
         $res = $instance->insert('blog', $field);
         if($res == 1){ //插入成功
-            $insert_id = $instance->getLastInsertId()[0]['last_insert_id()'];
             //社区帖子数 +1
             Group_GamegroupModel::gameGroupActionCountAdd($data['g_g_id'], 1);
-            return $insert_id;
+            return true;
         }else{
             return false;
         }
@@ -53,56 +53,76 @@ class Blog_BlogModel {
         $instance = Comm_Db_Handler::getInstance(self::$db, $config);
         $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
-        //////////////
+        
         if($type == 1){ //回帖
             $field = array(
+                'b_c_id'   => $data['b_c_id'],
                 'uid'      => $data['uid'],  //评论者的uid
                 'bid'      => $data['bid'],
                 'content'  => $data['content'],
                 'pic_num'  => $data['pic_num'],
                 'atime'    => $data['atime'],
-                'ctime'    => $data['ctime']
+                'ctime'    => $data['ctime'],
+                'status'   => $data['status']
             );
             $res = $instance->insert('blog_comment', $field);
             if($res == 1){ //插入成功
-                $insert_id = $instance->getLastInsertId()[0]['last_insert_id()'];
                 //将用户回帖顺序记录redis
                 $config_cache = Comm_Config::getIni('sprintf.blog.comment.timeorder.bid');
-                Comm_Redis_Redis::zadd($redis, sprintf($config_cache['key'], $data['bid']), time(), $insert_id);
+                Comm_Redis_Redis::zadd($redis, sprintf($config_cache['key'], $data['bid']), time(), $data['b_c_id']);
             
                 if($data['uid'] == $data['buid']){ //单独保存楼主的评论  用户（只看楼主）
                     $config_cache = Comm_Config::getIni('sprintf.blog.comment.timeorder.bid.user');
-                    Comm_Redis_Redis::zadd($redis, sprintf($config_cache['key'], $data['bid'], $data['buid']), time(), $insert_id);
+                    Comm_Redis_Redis::zadd($redis, sprintf($config_cache['key'], $data['bid'], $data['buid']), time(), $data['b_c_id']);
                 }
                 //回帖数 +1
                 self::blogActionCountAdd($data['bid'], 1);
-                return $insert_id;
+                return 1;
             }
         }elseif($type == 2){ //回复
             $field = array(
+                'b_c_c_id'   => $data['b_c_c_id'],
                 'uid'        => $data['uid'],  //评论者的uid
                 'bid'        => $data['bid'],
                 'touid'      => $data['touid'],
                 'b_c_id'     => $data['b_c_id'],
-                'f_b_c_c_id' => $data['b_c_c_id'], 
+                'f_b_c_c_id' => $data['f_b_c_c_id'], 
                 'content'    => $data['content'],
                 'atime'      => $data['atime'],
                 'ctime'      => $data['ctime']
             );
             $res = $instance->insert('blog_comment_reply', $field);
             if($res == 1){ //插入成功
-                $insert_id = $instance->getLastInsertId()[0]['last_insert_id()'];
                 //将用户回复顺序记录redis
                 $config_cache = Comm_Config::getIni('sprintf.blog.comment.timeorder.b_c_id');
-                Comm_Redis_Redis::zadd($redis, sprintf($config_cache['key'], $data['b_c_id']), time(), $insert_id);
+                Comm_Redis_Redis::zadd($redis, sprintf($config_cache['key'], $data['b_c_id']), time(), $data['b_c_c_id']);
                 //回复数 +1
                 self::blogCommentActionCountAdd($data['b_c_id'], 1);
                 
-                return $insert_id;
+                return 1;
             }
         }
         
         return false;
+    }
+    
+    /*
+     * 初始化blog的点赞，评论
+     */
+    public static function initBlogActionCount($bid){
+        if(! is_numeric($bid) || $bid <= 0){
+            return false;
+        }
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+        $config_cache = Comm_Config::getIni('sprintf.blog.action_count');
+        $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        $blog_action_count = array(
+            'read_num'    => 0,
+            'reply_num'   => 0,
+            'collect_num' => 0,
+            'favor_num'   => 0
+        );
+        Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($blog_action_count));
     }
     
     /*
@@ -186,7 +206,7 @@ class Blog_BlogModel {
     /*
      * 插入图片
      * big 图片所属帖子id
-     * urls 图片url数组 形如 array('http://www.abc.com/a.jpg', 'http://www.abc.com/b.jpg');
+     * urls 图片url数组 形如 array( 1 => 'http://www.abc.com/a.jpg', 2 => 'http://www.abc.com/b.jpg');
      */
     public static function insertBlogImage($bid, array $urls){
         if(! is_numeric($bid) || $bid <= 0 || empty($urls)){
@@ -195,13 +215,13 @@ class Blog_BlogModel {
         //获取数据库配置文件
         $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.write');
         $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-        foreach($urls as $url){
+        foreach($urls as $key => $url){
             $field = array(
-                'bid'   => $bid,
-                'url_2' => $url, //原图
-                'type'  => 2, //原图
-                'atime' => date('Y-m-d H:i:s'),
-                'ctime' => time()
+                'b_i_id' => $key,
+                'bid'    => $bid,
+                'url_2'  => $url, //原图
+                'atime'  => date('Y-m-d H:i:s'),
+                'ctime'  => time()
             );
             $res = $instance->insert('blog_images', $field);
             if($res != 1){
@@ -215,7 +235,7 @@ class Blog_BlogModel {
      * 插入回帖图片
      * big 图片所属帖子id
      * b_c_id 回帖id
-     * urls 图片url数组 形如 array('http://www.abc.com/a.jpg', 'http://www.abc.com/b.jpg');
+     * urls 图片url数组 形如 array( 1 => 'http://www.abc.com/a.jpg', 2 => 'http://www.abc.com/b.jpg');
      */
     public static function insertBlogReplyImage($bid, $b_c_id, array $urls){
         if(! is_numeric($bid) || $bid <= 0 || ! is_numeric($b_c_id) || $b_c_id <= 0 || empty($urls)){
@@ -224,8 +244,9 @@ class Blog_BlogModel {
         //获取数据库配置文件
         $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.write');
         $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-        foreach($urls as $url){
+        foreach($urls as $key => $url){
             $field = array(
+                'b_c_id_id' => $key,
                 'bid'    => $bid,
                 'b_c_id' => $b_c_id,
                 'url_2'  => $url, //原图
@@ -285,7 +306,7 @@ class Blog_BlogModel {
             //获取数据库配置文件
             $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
             $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-            $sql = 'select a.bid,a.type, a.uid, a.pic_num, a.title, a.content, a.address, a.status, a.g_g_id, a.atime, b.name as g_g_name from blog a inner join game_group b on a.g_g_id = b.g_g_id where a.bid = '.$bid.' limit 1';
+            $sql = 'select a.bid,a.type, a.uid, a.pic_num, a.title, a.content, a.address, a.status, a.g_g_id, a.atime, a.ctime, b.name as g_g_name from blog a inner join game_group b on a.g_g_id = b.g_g_id where a.bid = '.$bid.' limit 1';
             $blog = $instance->doSql($sql)[0];
             if(! empty($blog)){
                 //入redis
@@ -293,6 +314,33 @@ class Blog_BlogModel {
             }
         }
         return $blog;
+    }
+    
+    /*
+     * 预埋blog的缓存
+     */
+    public static function setBlogDetail(&$data){
+        if(empty($data)){
+            return false;
+        }
+        $blog = array(
+                'bid'       => $data['bid'],
+                'type'      => 0,  //帖子类型 0 普通，1 精华  默认 0
+                'uid'       => $data['uid'],
+                'pic_num'   => $data['pic_num'],
+                'title'     => $data['title'],
+                'content'   => $data['content'],
+                'address'   => $data['address'],
+                'atime'     => $data['atime'],
+                'ctime'     => $data['ctime'],
+                'g_g_id'    => $data['g_g_id'],
+                'g_g_name'  => Group_GamegroupModel::getGroupInfo($data['g_g_id'])['name'],
+                'status'    => 0 //帖子转态 0 正常， 1 下架  默认 0
+            );
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+        $config_cache = Comm_Config::getIni('sprintf.blog.content');
+        $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $data['bid']), $config_cache['expire'], json_encode($blog));
     }
     
     /*
@@ -324,6 +372,35 @@ class Blog_BlogModel {
     }
     
     /*
+     * 拼接帖子图片信息如redis
+     */
+    public static function setBlogImage(&$data){
+        if(empty($data)){
+            return false;
+        }
+        $imageInfo = array();
+        $bid = null;
+        foreach ($data as $b_i_id => $v){
+            $imageInfo[$b_i_id] = array(
+                'b_i_id'  => $v['b_i_id'],
+                'bid'     => $v['bid'],
+                'url_0'   => $v['url_0'],
+                'url_1'   => $v['url_1'],
+                'url_2'   => $v['url_2'],
+                'atime'   => $v['atime'],
+                'ctime'   => $v['ctime'],
+                'summary' => $v['summary'],
+                'status'  => 0
+            );
+            $bid = $v['bid'];
+        }
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+        $config_cache = Comm_Config::getIni('sprintf.blog.imageinfo');
+        $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($imageInfo));
+    }
+    
+    /*
      * 获取帖子的图片
      */
     public static function getBlogImage($bid){
@@ -331,23 +408,23 @@ class Blog_BlogModel {
             return false;
         }
         //先从redis里面取
-        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.read');
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
         $config_cache = Comm_Config::getIni('sprintf.blog.imageinfo');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
         $imageInfo = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)), true);
         if(! $imageInfo){ //从db中取
-                //获取数据库配置文件
-                $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
-                $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-                $info = $instance->field('*')->where("bid = $bid")->select('blog_images');
-                $imageInfo = array();
-                if(! empty($info)){
-                    foreach ($info as $v){
-                        $imageInfo[$v['b_i_id']] = $v;
-                    }
-                    //入redis
-                    Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($imageInfo));
+            //获取数据库配置文件
+            $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
+            $instance = Comm_Db_Handler::getInstance(self::$db, $config);
+            $info = $instance->field('*')->where("bid = $bid")->select('blog_images');
+            $imageInfo = array();
+            if(! empty($info)){
+                foreach ($info as $v){
+                    $imageInfo[$v['b_i_id']] = $v;
                 }
+                //入redis
+                Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($imageInfo));
+            }
         }
         return $imageInfo;
     }
@@ -360,7 +437,7 @@ class Blog_BlogModel {
             return false;
         }
         //先从redis里面取
-        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.read');
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
         $config_cache = Comm_Config::getIni('sprintf.blog.action_count');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
         $blog_action_count = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)), true);
@@ -368,24 +445,49 @@ class Blog_BlogModel {
             //获取数据库配置文件
             $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
             $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-            $blog_action_count = $instance->field('*')->where("bid = $bid")->select('blog_action_count')[0];
-            if(! empty($blog_action_count)){
-                //入redis
-                Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($blog_action_count));
+            $blog_action_count = $instance->field('read_num, reply_num, collect_num, favor_num')->where("bid = $bid")->select('blog_action_count')[0];
+            if(empty($blog_action_count)){
+                $blog_action_count = array(
+                    'read_num'    => 0,
+                    'reply_num'   => 0,
+                    'collect_num' => 0,
+                    'favor_num'   => 0
+                );
             }
+            //入redis
+            Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($blog_action_count));
+            
         }
         return $blog_action_count;
     }
     
     /*
-     * 获取帖子评论的转评赞数
+     * 初始化回帖的转评赞数
+     */
+    public static function initBlogCommentActionCount($b_c_id){
+        if(! is_numeric($b_c_id) || $b_c_id <= 0){
+            return false;
+        }
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+        $config_cache = Comm_Config::getIni('sprintf.blog.comment.action_count');
+        $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        $count = array(
+            'b_c_id'    => $b_c_id,
+            'reply_num' => 0,
+            'favor_num' => 0
+        );
+        Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $b_c_id), $config_cache['expire'], json_encode($count));
+    }
+    
+    /*
+     * 获取回帖的转评赞数
      */
     public static function getBlogCommentActionCount($b_c_id){
         if(! is_numeric($b_c_id) || $b_c_id <= 0){
             return false;
         }
         //先从redis里面取
-        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.read');
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
         $config_cache = Comm_Config::getIni('sprintf.blog.comment.action_count');
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
         $blog_comment_action_count = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $b_c_id)), true);
@@ -393,11 +495,15 @@ class Blog_BlogModel {
             //获取数据库配置文件
             $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
             $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-            $blog_comment_action_count = $instance->field('*')->where("b_c_id = $b_c_id")->select('blog_comment_action_count')[0];
-            if(! empty($blog_comment_action_count)){
-                //入redis
-                Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $b_c_id), $config_cache['expire'], json_encode($blog_comment_action_count));
+            $blog_comment_action_count = $instance->field('b_c_id, reply_num, favor_num')->where("b_c_id = $b_c_id")->select('blog_comment_action_count')[0];
+            if(empty($blog_comment_action_count)){
+                $blog_comment_action_count = array(
+                    'b_c_id'    => $b_c_id,
+                    'reply_num' => 0,
+                    'favor_num' => 0
+                );
             }
+            Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $b_c_id), $config_cache['expire'], json_encode($blog_comment_action_count));
         }
         return $blog_comment_action_count;
     }
@@ -554,10 +660,18 @@ class Blog_BlogModel {
     /*
      * 删除帖子图片
      * imgIds 形如 array(1, 2, 3)
+     * is_own 1 用户自己，0否
      */
-    public static function delBlogImg($bid, array $imgIds){
+    public static function delBlogImg($g_g_id, $uid, $bid, array $imgIds, $atime, $is_own = 0){
         if(empty($bid) || empty($imgIds)){
             return false;
+        }
+        if($is_own === 0){
+            //检查该管理员的操作次数是否已过
+            $count = self::getManagerCharge($g_g_id, $uid, $atime);
+            if($count['used'] >= $count['all']){
+                return -1;
+            }
         }
         
         $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
@@ -595,6 +709,12 @@ class Blog_BlogModel {
         //更新blog_images 的db
         $sql = 'delete from blog_images where bid = '.$bid.' and b_i_id in ('.implode(',', $imgIds).')';
         $instance->doSql($sql);
+        
+        if($is_own === 0){
+            self::managerLogAdd($g_g_id, $bid, $uid, 4);
+            self::setBlogManagerLog($bid, $uid, 4, $atime);
+        }
+        
         return 1;
     }
     
@@ -602,7 +722,7 @@ class Blog_BlogModel {
      * 修改帖子字段
      * 修改field字段的内容为content
      */
-    public function updateBlog($bid, $field, $content){
+    public static function updateBlog($bid, $field, $content){
         if(empty($bid) || empty($field)){
             return false;
         }
@@ -631,26 +751,78 @@ class Blog_BlogModel {
     }
     
     /*
-     * 管理员更新帖子
-     * type 1 更新标题， 2 更新正文
+     * 更新帖子图片
      */
-    public static function modify($uid, $bid, $type, $content){
-        if(empty($uid) || empty($bid) || empty($type)){
+    public static function updateBlogImage($g_g_id, $uid, $bid, $img_id, $img_url, $atime, $is_own = 0){
+        if(empty($g_g_id) || empty($uid) || empty($bid)){
             return false;
         }
+        if($is_own === 0){
+            //检查该管理员的操作次数是否已过
+            $count = self::getManagerCharge($g_g_id, $uid, $atime);
+            if($count['used'] >= $count['all']){
+                return -1;
+            }
+        }
+        //更新redis
+        $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
+        $config_cache = Comm_Config::getIni('sprintf.blog.imageinfo');
+        $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
+        $imageInfo = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)), true);
+        if($imageInfo){
+            $imageInfo[$img_id]['url_2'] = $img_url;
+            Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($imageInfo));
+        }
+        
+        //更新db
+        $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
+        $instance = Comm_Db_Handler::getInstance(self::$db, $config);
+        $instance->where(array('b_i_id' => $img_id))->update('blog_images', array('url_2' => $img_url));
+        
+        if($is_own === 0){
+            self::managerLogAdd($g_g_id, $bid, $uid, 4);
+            self::setBlogManagerLog($bid, $uid, 4, $atime);
+        }
+        return 1;
+    }
+    
+    /*
+     * 更新帖子
+     * type 1 更新标题， 2 更新正文
+     * is_own 1 用户自己，0否
+     */
+    public static function modify($g_g_id, $uid, $bid, $type, $content, $atime, $is_own = 0){
+        if(empty($g_g_id) || empty($uid) || empty($bid) || empty($type)){
+            return false;
+        }
+        
+        if($is_own === 0){
+            //检查该管理员的操作次数是否已过
+            $count = self::getManagerCharge($g_g_id, $uid, $atime);
+            if($count['used'] >= $count['all']){
+                return -1;
+            }
+        }
+        
         if($type == 1){
             $field = 'title';
         }elseif($type == 2){
             $field = 'content';
         }
-        return self::updateBlog($bid, $field, $content);    
+        self::updateBlog($bid, $field, $content);
+        if($is_own === 0){
+            self::managerLogAdd($g_g_id, $bid, $uid, 4);
+            self::setBlogManagerLog($bid, $uid, 4, $atime);
+        }
+        
+        return 1;
     }       
     /*
      * 管理员操作（置顶，加精，删除）
      * type 1 置顶， 2 加精， 3 删除
      */
     public static function manage($uid, $g_g_id, $bid, $type, $atime, $ctime){
-        if(empty($uid) || empty($bid) || empty($type) || empty($g_g_id)){
+        if(empty($g_g_id) || empty($uid) || empty($bid) || empty($type) || empty($g_g_id)){
             return false;
         }
         //检查该管理员的操作次数是否已过
@@ -658,6 +830,7 @@ class Blog_BlogModel {
         if($count['used'] >= $count['all']){
             return -1;
         }
+        
         switch ($type){
             case 1 :
                 $res = self::addTop($g_g_id, $bid, $uid, $atime);
@@ -674,7 +847,7 @@ class Blog_BlogModel {
     }
     /*
      * 管理员操作log
-     * type 1 置顶， 2 加精， 3 删除
+     * type 1 置顶， 2 加精， 3 删除，4 修改
      */
     public static function managerLogAdd($g_g_id, $bid, $uid, $type){
         //获取数据库配置文件
@@ -691,8 +864,9 @@ class Blog_BlogModel {
     
     /*
      * 删除blog
+     * is_own  是否为用户自己  1是 ， 0 否
      */
-    public static function delBlog($g_g_id, $bid, $uid, $atime){
+    public static function delBlog($g_g_id, $bid, $uid, $atime, $is_own = 0){
         if(empty($uid) || empty($bid) || empty($g_g_id)){
             return false;
         }
@@ -706,8 +880,9 @@ class Blog_BlogModel {
         Comm_Redis_Redis::zrem($redis, sprintf($config_cache['key'], $g_g_id), $bid);
         
         self::updateBlog($bid, 'status', 1);
-        
-        self::setBlogManagerLog($bid, $uid, 3, $atime);
+        if($is_own === 0){
+            self::setBlogManagerLog($bid, $uid, 3, $atime);
+        }
         
         return 1;
     }

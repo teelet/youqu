@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="7ddfbbd3-44e0-4852-91c2-df6077c43ef7" name="youqu" url="http://10.210.227.66">
+        <fileTransfer host="10.210.227.66" port="21" rootFolder="/data1/www/htdocs/youqu.intra.weibo.com" password="df9bdf98df99dfdbdfdddfcf" username="weibo">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="21" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

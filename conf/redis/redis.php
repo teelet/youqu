@@ -6,12 +6,12 @@
 return array(
     'redis1' => array(  //库名
         'write' => array(
-            'host'   => $_SERVER['REDIS1_HOST'],
-            'port'   => $_SERVER['REDIS1_HOST_PORT'],
+            'host'   => '139.129.36.196',
+            'port'   => 6379
         ),
         'read'  => array(
-            'host'   => $_SERVER['REDIS1_HOST_R'],
-            'port'   => $_SERVER['REDIS1_HOST_PORT_R'],
+            'host'   => '139.129.36.196',
+            'port'   => 6379
         ),
     ),
 );
