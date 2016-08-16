@@ -417,6 +417,7 @@ class CurlController extends AbstractController {
         $url = "http://i.youqu.intra.weibo.com/home_sendmsg";
         */
 
+        /*
         //用户申请新游戏
         $data = array(
             'uid' => 1,
@@ -426,7 +427,13 @@ class CurlController extends AbstractController {
             'ctime'     => time()
         );
         $url = "http://i.youqu.intra.weibo.com/game_userapply";
-        
+        */
+
+        //用户注册
+        $data = array();
+        $url = 'http://i.youqu.intra.weibo.com/me_register';
+
+
         $method = 'POST';
         $http = new Comm_HttpRequest();
         $http->url = $url;

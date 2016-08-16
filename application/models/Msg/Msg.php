@@ -22,7 +22,7 @@ class Msg_MsgModel{
         $res = Msg_Callsms::sendPostRequest($tel, $code);
         $res = json_decode($res, true);
 
-        if($res['code'] == 1000){
+        if($res['code'] == 1000){ //成功
             //入redis
             $config_redis = Comm_Config::getPhpConf('redis/redis.redis1.write');
             $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
