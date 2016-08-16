@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e7366430-4fcc-4245-9706-3381c21f4e66" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/models/Msg/Msg.php" afterPath="$PROJECT_DIR$/application/models/Msg/Msg.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/Internal/controllers/Curl.php" afterPath="$PROJECT_DIR$/application/modules/Internal/controllers/Curl.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/db/db.php" afterPath="$PROJECT_DIR$/conf/db/db.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/redis/redis.php" afterPath="$PROJECT_DIR$/conf/redis/redis.php" />
     </list>
@@ -27,31 +24,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Curl.php" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Curl.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Curl.php">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="306">
               <caret line="439" column="35" selection-start-line="439" selection-start-column="35" selection-end-line="439" selection-end-column="35" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="db.php" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/conf/db/db.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="8" column="25" selection-start-line="8" selection-start-column="25" selection-end-line="8" selection-end-column="25" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="redis.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/conf/redis/redis.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
-              <caret line="22" column="44" selection-start-line="22" selection-start-column="44" selection-end-line="22" selection-end-column="44" />
               <folding />
             </state>
           </provider>
@@ -360,15 +337,15 @@
       <updated>1471090779017</updated>
       <workItem from="1471090782148" duration="2647000" />
       <workItem from="1471094076200" duration="3097000" />
-      <workItem from="1471097524732" duration="29500000" />
+      <workItem from="1471097524732" duration="29718000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="35244000" />
+    <option name="totallyTimeSpent" value="35462000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="198" y="58" width="1132" height="709" extended-state="0" />
+    <frame x="198" y="58" width="1132" height="709" extended-state="1" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21378092" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -854,26 +831,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Curl.php">
+    <entry file="file://$PROJECT_DIR$/conf/db/db.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="439" column="35" selection-start-line="439" selection-start-column="35" selection-end-line="439" selection-end-column="35" />
+        <state relative-caret-position="18">
+          <caret line="7" column="8" selection-start-line="7" selection-start-column="8" selection-end-line="7" selection-end-column="8" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/conf/redis/redis.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="22" column="44" selection-start-line="22" selection-start-column="44" selection-end-line="22" selection-end-column="44" />
+        <state relative-caret-position="75">
+          <caret line="7" column="8" selection-start-line="7" selection-start-column="8" selection-end-line="7" selection-end-column="8" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/conf/db/db.php">
+    <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Curl.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="8" column="25" selection-start-line="8" selection-start-column="25" selection-end-line="8" selection-end-column="25" />
+        <state relative-caret-position="306">
+          <caret line="439" column="35" selection-start-line="439" selection-start-column="35" selection-end-line="439" selection-end-column="35" />
           <folding />
         </state>
       </provider>

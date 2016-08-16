@@ -5,7 +5,7 @@
 
 return array(
     'gameinfo' => array(  //库名
-        /*
+
         'write' => array(
             'host'   => '139.129.36.196',
             'port'   => 3306,
@@ -20,7 +20,8 @@ return array(
             'passwd' => '123qwe',
             'dbname' => 'gameinfo'
         ),
-        */
+
+        /*
         'write' => array(
             'host'   => 'vps.master.youqu.lan',
             'port'   => 3306,
@@ -33,7 +34,7 @@ return array(
             'port'   => 3306,
             'user'   => 'youqu',
             'passwd' => 'l*JxbrYw&z',
-            'dbname' => 'youqu'
-        ),
+            '
+        */
     ),
 );
