@@ -199,7 +199,6 @@ class CurlController extends AbstractController {
         $url = "http://i.youqu.intra.weibo.com/home_getcatecardlist";
         */
 
-        /*
 
         //获取文章图片列表
         $data = array(
@@ -208,11 +207,12 @@ class CurlController extends AbstractController {
             'pagesize' => 2
         );
         $url = "http://i.youqu.intra.weibo.com/home_getarticleimages";
-        */
 
+        /*
         $data = array(
         );
         $url = "http://i.youqu.intra.weibo.com/game_recommend";
+        */
 
         $method = 'GET';
         $http = new Comm_HttpRequest();

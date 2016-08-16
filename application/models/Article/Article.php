@@ -29,7 +29,6 @@ class Article_ArticleModel {
             if(!empty($cards[$key])){
                 $cards[$key]['comment_num'] = $action_count[$card['aid']]['comment_num']; //评论数
                 $cards[$key]['form_name'] = $article_forms[$card['a_f_id']];
-
                 //获取card图片
                 if($card['pic_num'] > 0){
                     $article_images = self::getArticleImg($card['aid'], 0 , 3);
@@ -39,7 +38,6 @@ class Article_ArticleModel {
                         }
                     }
                 }
-
             }
         }
 
