@@ -22,29 +22,22 @@ class Blog_PostblogreplyController extends AbstractController {
                 $this->param['buid']    = (int) Comm_Context::form('buid', 0);  //帖主的uid
                 $pic_urls = array();
                 if($this->param['pic_num'] >= 1){
-                    for($i = 0; $i < $this->param['pic_num']; $i++){
-                        $key = 'pic_'.$i;
-                        $key_ext = 'pic_ext_'.$i;
-                        $pic = base64_decode(Comm_Context::form($key));  //base64 转码图片流
-                        $pic_ext = Comm_Context::form($key_ext);
-                        $format = Comm_Config::getIni('sprintf.blog.image.name'); //图片名称格式
-                        $pic_name = sprintf($format, $this->param['uid'], rand(), time(), rand(), $pic_ext);
-                        $file = date('Y/m/d').'/'.$pic_name;
-                        //生成多张图片 原图 正文图 缩略图
-                        $filepath0 = '/blog/origin/'.$file;
-                        //$filepath1 = '/blog/normal/'.$file;
-                        //$filepath2 = '/blog/thumbnail/'.$file;
-                        $filename0 = IMG_PATH.$filepath0;
-                        //$filename1 = IMG_PATH.$filepath1;
-                        //$filename2 = IMG_PATH.$filepath2;
-                        ImagedealModel::imageWrite($filename0, $pic);
-                        if(is_file($filename0)){  //说明图片成功上传
-                            $pic_urls[] = STATIC_SERVER.$filepath0;
-                        }else{ //网络异常
-                            $this->format(3);
-                            $this->jsonResult($this->data);
-                            return $this->end();
+                    for($i = 1; $i <= $this->param['pic_num']; $i++){
+                        $key = 'pic_name_'.$i;
+                        $pic = Comm_Context::form($key, '');
+                        $pic_name_prefix = explode('_', $pic)[0];
+                        $pic_ext = end(explode('.', $pic));
+                        if(! $pic_name_prefix || ! $pic_ext){
+                            //参数有误
+                            $this->format(2);
+                            return false;
                         }
+                        //入库图片名
+                        $pic_urls[] = array(
+                            'pic_name_0' => $pic_name_prefix.'_0.'.$pic_ext, //缩略图
+                            'pic_name_1' => $pic_name_prefix.'_1.'.$pic_ext, //正文图
+                            'pic_name_2' => $pic //原图
+                        );
                     }
                 }
                 
@@ -92,9 +85,9 @@ class Blog_PostblogreplyController extends AbstractController {
                             'b_c_i_id'  => $b_c_i_id,
                             'bid'       => $this->param['bid'],
                             'b_c_id'    => $b_c_id,
-                            'url_0'     => '',
-                            'url_1'     => '',
-                            'url_2'     => $url,
+                            'url_0'   => $url['pic_name_0'],
+                            'url_1'   => $url['pic_name_1'],
+                            'url_2'   => $url['pic_name_2'],
                             'atime'   => $this->param['atime'],
                             'ctime'   => $this->param['ctime']
                         );

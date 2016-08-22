@@ -206,7 +206,7 @@ class Blog_BlogModel {
     /*
      * 插入图片
      * big 图片所属帖子id
-     * urls 图片url数组 形如 array( 1 => 'http://www.abc.com/a.jpg', 2 => 'http://www.abc.com/b.jpg');
+     * urls 图片url数组
      */
     public static function insertBlogImage($bid, array $urls){
         if(! is_numeric($bid) || $bid <= 0 || empty($urls)){
@@ -219,7 +219,9 @@ class Blog_BlogModel {
             $field = array(
                 'b_i_id' => $key,
                 'bid'    => $bid,
-                'url_2'  => $url, //原图
+                'url_0'   => $url['pic_name_0'],
+                'url_1'   => $url['pic_name_1'],
+                'url_2'   => $url['pic_name_2'],
                 'atime'  => date('Y-m-d H:i:s'),
                 'ctime'  => time()
             );
@@ -249,7 +251,9 @@ class Blog_BlogModel {
                 'b_c_id_id' => $key,
                 'bid'    => $bid,
                 'b_c_id' => $b_c_id,
-                'url_2'  => $url, //原图
+                'url_0'   => $url['pic_name_0'],
+                'url_1'   => $url['pic_name_1'],
+                'url_2'   => $url['pic_name_2'],
                 'atime'  => date('Y-m-d H:i:s'),
                 'ctime'  => time()
             );
@@ -770,14 +774,16 @@ class Blog_BlogModel {
         $redis = Comm_Redis_Redis::connect($config_redis['host'], $config_redis['port']);
         $imageInfo = json_decode(Comm_Redis_Redis::get($redis, sprintf($config_cache['key'], $bid)), true);
         if($imageInfo){
-            $imageInfo[$img_id]['url_2'] = $img_url;
+            $imageInfo[$img_id]['url_0'] = $img_url['img_name_0'];
+            $imageInfo[$img_id]['url_1'] = $img_url['img_name_1'];
+            $imageInfo[$img_id]['url_2'] = $img_url['img_name_2'];
             Comm_Redis_Redis::setex($redis, sprintf($config_cache['key'], $bid), $config_cache['expire'], json_encode($imageInfo));
         }
         
         //更新db
         $config = Comm_Config::getPhpConf('db/db.'.self::$db.'.read');
         $instance = Comm_Db_Handler::getInstance(self::$db, $config);
-        $instance->where(array('b_i_id' => $img_id))->update('blog_images', array('url_2' => $img_url));
+        $instance->where(array('b_i_id' => $img_id))->update('blog_images', array('url_0' => $img_url['img_name_0'], 'url_1' => $img_url['img_name_1'], 'url_2' => $img_url['img_name_2']));
         
         if($is_own === 0){
             self::managerLogAdd($g_g_id, $bid, $uid, 4);

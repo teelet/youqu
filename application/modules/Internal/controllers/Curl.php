@@ -199,7 +199,7 @@ class CurlController extends AbstractController {
         $url = "http://i.youqu.intra.weibo.com/home_getcatecardlist";
         */
 
-
+        /*
         //获取文章图片列表
         $data = array(
             'aid' => 2,
@@ -207,12 +207,17 @@ class CurlController extends AbstractController {
             'pagesize' => 2
         );
         $url = "http://i.youqu.intra.weibo.com/home_getarticleimages";
+        */
 
-        /*
+
+        //游戏推荐
         $data = array(
         );
         $url = "http://i.youqu.intra.weibo.com/game_recommend";
-        */
+
+
+
+
 
         $method = 'GET';
         $http = new Comm_HttpRequest();
@@ -235,14 +240,12 @@ class CurlController extends AbstractController {
         $data = array(
             'uid'       => 1,
             'g_g_id'    => 1, //英雄联盟
-            'title'     => '我是标题',
-            'content'   => '我是内容',
+            'title'     => '我是标题newnew',
+            'content'   => '我是内容newnew',
             'address'   => '北京',
             'pic_num'   => '2',
-            'pic_0'     => base64_encode(file_get_contents('http://img0w.pconline.com.cn/pconline/1401/15/4172339_touxiang/23.jpg')),
-            'pic_1'     => base64_encode(file_get_contents('http://e.hiphotos.baidu.com/zhidao/wh%3D450%2C600/sign=972b6623ccfc1e17fdea84357fa0da35/94cad1c8a786c917abbc830cca3d70cf3bc7574c.jpg')),
-            'pic_ext_0' => 'jpg',
-            'pic_ext_1' => 'jpg',
+            'pic_name_1' => 'a_2.jpg',
+            'pic_name_2' => 'b_2.jpg',
             'atime'     => date('Y-m-d H:i:s'),
             'ctime'     => time()
         );
@@ -252,19 +255,17 @@ class CurlController extends AbstractController {
         /*
         //回帖+回复
         $data = array(
-            'type' => 2, //1 回帖， 2 回复
+            'type' => 1, //1 回帖， 2 回复
             'uid'  => 2, //评论者uid
             'buid' => 1, //楼主uid
             'touid' => 1,//被ping者的uid
             'bid'  => 1,
-            'content'   => '回复回复回复',
+            'content'   => '回帖回帖new',
             'b_c_id' => 1,  //被回复的回帖b_c_id
              //'b_c_c_id' => 11, //被回复的 回复b_c_cid
-            //'pic_num'   => 2,
-            //'pic_0'     => base64_encode(file_get_contents('http://img0.pconline.com.cn/pconline/1508/13/6824500_006_thumb.jpg')),
-            //'pic_1'     => base64_encode(file_get_contents('http://img0w.pconline.com.cn/pconline/1312/26/4067557_26-080440_831.jpg')),
-            //'pic_ext_0' => 'jpg',
-            //'pic_ext_1' => 'jpg',
+            'pic_num'   => '2',
+            'pic_name_1' => 'a_2.jpg',
+            'pic_name_2' => 'b_2.jpg',
             'atime'     => date('Y-m-d H:i:s'),
             'ctime'     => time()
         );
@@ -328,7 +329,7 @@ class CurlController extends AbstractController {
         );
         $url = "http://i.youqu.intra.weibo.com/blog_manage";
         */
-        /*
+
         //更新帖子
         $data = array(
             'uid' => 1,
@@ -341,19 +342,16 @@ class CurlController extends AbstractController {
             'imgId_del' => '7_8', //多个图片id用 ‘_’ 下划线分割
             //type 4
             'imgId_mod' => 15,  //要修改的图片id
-            'img_mod'   => base64_encode(file_get_contents('http://img0w.pconline.com.cn/pconline/1401/20/4196857_miao/22434S528-21.jpg')),
-            'img_mod_ext'   => 'jpg',
+            'img_mod_name'   => 'a_2.jpg',
             //type 5
             'img_num' => 2, //新上传2张
-            'img_0' => base64_encode(file_get_contents('http://www.qq745.com/uploads/allimg/150303/1-150303195554.jpg')),
-            'img_1' => base64_encode(file_get_contents('http://www.qq745.com/uploads/allimg/150303/1-150303195554.jpg')),
-            'img_ext_0' => 'jpg',
-            'img_ext_1' => 'jpg',
+            'img_name_1' => 'b_2.jpg',
+            'img_name_2' => 'c_2.jpg',
             'atime'     => date('Y-m-d H:i:s'),
             'ctime'     => time()
         );
         $url = "http://i.youqu.intra.weibo.com/blog_modify";
-        */
+
         /*
         //发表文章评论 + 回复
         $data = array(
@@ -428,12 +426,24 @@ class CurlController extends AbstractController {
         );
         $url = "http://i.youqu.intra.weibo.com/game_userapply";
         */
-
+        /*
         //用户注册
         $data = array();
         $url = 'http://i.youqu.intra.weibo.com/me_register';
-
-
+        */
+        /*
+        //获取图片上传token
+        $data = array(
+            'uid' => 1,
+            'pic_num' => 5,
+            'pic_name_1' => 'a.jpg',
+            'pic_name_2' => 'b.jpg',
+            'pic_name_3' => 'c.jpg',
+            'pic_name_4' => 'd.jpg',
+            'pic_name_5' => 'e.jpg',
+        );
+        $url = "http://i.youqu.intra.weibo.com/home_getimagetoken";
+        */
         $method = 'POST';
         $http = new Comm_HttpRequest();
         $http->url = $url;

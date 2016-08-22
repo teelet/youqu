@@ -27,27 +27,21 @@ class Blog_ModifyController extends AbstractController {
                 $res = Blog_BlogModel::delBlogImg($this->param['g_g_id'], $this->param['uid'],$this->param['bid'], array_unique(explode('_', $this->param['imgId_del'])), $this->param['atime'], $this->param['is_own']);
             }elseif($this->param['type'] == 4){
                 $this->param['imgId_mod']     = Comm_Context::form('imgId_mod', 0); //要修改的图片id
-                $this->param['img_mod']       = base64_decode(Comm_Context::form('img_mod', ''));  //图片流 base64
-                $this->param['img_mod_ext']   = Comm_Context::form('img_mod_ext', '');  //图片扩展名
-                
-                $format = Comm_Config::getIni('sprintf.blog.image.name'); //图片名称格式
-                $img_name = sprintf($format, $this->param['uid'], rand(), time(), rand(), $this->param['img_mod_ext']);
-                $file = date('Y/m/d').'/'.$img_name;
-                //生成多张图片 原图 正文图 缩略图
-                $filepath0 = '/blog/origin/'.$file;
-                //$filepath1 = '/blog/normal/'.$file;
-                //$filepath2 = '/blog/thumbnail/'.$file;
-                $filename0 = IMG_PATH.$filepath0;
-                //$filename1 = IMG_PATH.$filepath1;
-                //$filename2 = IMG_PATH.$filepath2;
-                ImagedealModel::imageWrite($filename0, $this->param['img_mod']);
-                if(is_file($filename0)){  //说明图片成功上传
-                    $img_url = STATIC_SERVER.$filepath0;
-                }else{ //网络异常
-                    $this->format(3);
+                $pic = Comm_Context::form('img_mod_name', '');
+                $pic_name_prefix = explode('_', $pic)[0];
+                $pic_ext = end(explode('.', $pic));
+                if(! $pic_name_prefix || ! $pic_ext){
+                    //参数有误
+                    $this->format(2);
                     $this->jsonResult($this->data);
                     return $this->end();
                 }
+
+                $img_url = array(
+                    'img_name_0' => $pic_name_prefix.'_0.'.$pic_ext, //缩略图
+                    'img_name_1' => $pic_name_prefix.'_1.'.$pic_ext, //正文图
+                    'img_name_2' => $pic //原图
+                );
                 
                 //更新帖子图片信息
                 $res = Blog_BlogModel::updateBlogImage($this->param['g_g_id'], $this->param['uid'],$this->param['bid'], $this->param['imgId_mod'], $img_url, $this->param['atime'], $this->param['is_own']);
@@ -56,29 +50,23 @@ class Blog_ModifyController extends AbstractController {
                 
                 if($this->param['img_num'] >= 1){
                     $img_urls = array();
-                    for($i = 0; $i < $this->param['img_num']; $i++){
-                        $key = 'img_'.$i;
-                        $key_ext = 'img_ext_'.$i;
-                        $img = base64_decode(Comm_Context::form($key));  //base64 转码图片流
-                        $img_ext = Comm_Context::form($key_ext);
-                        $format = Comm_Config::getIni('sprintf.blog.image.name'); //图片名称格式
-                        $img_name = sprintf($format, $this->param['uid'], rand(), time(), rand(), $img_ext);
-                        $file = date('Y/m/d').'/'.$img_name;
-                        //生成多张图片 原图 正文图 缩略图
-                        $filepath0 = '/blog/origin/'.$file;
-                        //$filepath1 = '/blog/normal/'.$file;
-                        //$filepath2 = '/blog/thumbnail/'.$file;
-                        $filename0 = IMG_PATH.$filepath0;
-                        //$filename1 = IMG_PATH.$filepath1;
-                        //$filename2 = IMG_PATH.$filepath2;
-                        ImagedealModel::imageWrite($filename0, $img);
-                        if(is_file($filename0)){  //说明图片成功上传
-                            $img_urls[] = STATIC_SERVER.$filepath0;
-                        }else{ //网络异常
-                            $this->format(3);
+                    for($i = 1; $i <= $this->param['img_num']; $i++){
+                        $key = 'img_name_'.$i;
+                        $pic = Comm_Context::form($key, '');
+                        $pic_name_prefix = explode('_', $pic)[0];
+                        $pic_ext = end(explode('.', $pic));
+                        if(! $pic_name_prefix || ! $pic_ext){
+                            //参数有误
+                            $this->format(2);
                             $this->jsonResult($this->data);
                             return $this->end();
                         }
+                        //入库图片名
+                        $img_urls[] = array(
+                            'pic_name_0' => $pic_name_prefix.'_0.'.$pic_ext, //缩略图
+                            'pic_name_1' => $pic_name_prefix.'_1.'.$pic_ext, //正文图
+                            'pic_name_2' => $pic //原图
+                        );
                     }
                     //发号器   图片url入库
                     $b_i_id_end = IndexmakerModel::makeIndex(3, $this->param['img_num']);
@@ -100,9 +88,9 @@ class Blog_ModifyController extends AbstractController {
                         $image_info[$b_i_id] = array(
                             'b_i_id'  => $b_i_id,
                             'bid'     => $this->param['bid'],
-                            'url_0'   => '',
-                            'url_1'   => '',
-                            'url_2'   => $url,
+                            'url_0'   => $url['pic_name_0'],
+                            'url_1'   => $url['pic_name_1'],
+                            'url_2'   => $url['pic_name_2'],
                             'atime'   => $this->param['atime'],
                             'ctime'   => $this->param['ctime'],
                             'summary' => '',
