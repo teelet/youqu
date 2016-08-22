@@ -23,6 +23,7 @@ class Home_GetimagetokenController extends AbstractController {
                 $pic_name_2 = $pic_name_prefix.'_2.'.$pic_ext;  //原图
                 $token = Qiniu_Image::getToken($pic_name_0, $pic_name_1); //获取token,当需要生成缩略图时,传缩略图名称
                 $token_arr[] = array(
+                    'host'            => Qiniu_Image::$host,
                     'pic_origin_name' => $pic_origin_name,  //参数传递过来的原图
                     'pic_name'        => $pic_name_2, //云存储上的原图名
                     'token'           =>  $token
@@ -42,7 +43,7 @@ class Home_GetimagetokenController extends AbstractController {
     }
 
     public function checkParam(){
-        if(empty($this->param['pic_num']) || empty($this->param['uid'])){
+        if(empty($this->param['pic_num'])){
             //参数有误
             $this->format(2);
             return false;

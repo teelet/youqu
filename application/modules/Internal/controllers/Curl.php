@@ -329,7 +329,7 @@ class CurlController extends AbstractController {
         );
         $url = "http://i.youqu.intra.weibo.com/blog_manage";
         */
-
+        /*
         //更新帖子
         $data = array(
             'uid' => 1,
@@ -351,7 +351,7 @@ class CurlController extends AbstractController {
             'ctime'     => time()
         );
         $url = "http://i.youqu.intra.weibo.com/blog_modify";
-
+        */
         /*
         //发表文章评论 + 回复
         $data = array(
@@ -431,19 +431,19 @@ class CurlController extends AbstractController {
         $data = array();
         $url = 'http://i.youqu.intra.weibo.com/me_register';
         */
-        /*
+
         //获取图片上传token
         $data = array(
             'uid' => 1,
             'pic_num' => 5,
-            'pic_name_1' => 'a.jpg',
+            'pic_name_1' => 'default_head_img.jpg',
             'pic_name_2' => 'b.jpg',
             'pic_name_3' => 'c.jpg',
             'pic_name_4' => 'd.jpg',
             'pic_name_5' => 'e.jpg',
         );
         $url = "http://i.youqu.intra.weibo.com/home_getimagetoken";
-        */
+
         $method = 'POST';
         $http = new Comm_HttpRequest();
         $http->url = $url;

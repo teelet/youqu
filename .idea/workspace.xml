@@ -3,14 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="e7366430-4fcc-4245-9706-3381c21f4e66" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/models/Blog/Blog.php" afterPath="$PROJECT_DIR$/application/models/Blog/Blog.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Modify.php" afterPath="$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Modify.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Postblog.php" afterPath="$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Postblog.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Postblogreply.php" afterPath="$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Postblogreply.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/Internal/controllers/Curl.php" afterPath="$PROJECT_DIR$/application/modules/Internal/controllers/Curl.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/db/db.php" afterPath="$PROJECT_DIR$/conf/db/db.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/redis/redis.php" afterPath="$PROJECT_DIR$/conf/redis/redis.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf/sprintf.ini" afterPath="$PROJECT_DIR$/conf/sprintf.ini" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/application/modules/Internal/controllers/Home/Getimagetoken.php" afterPath="$PROJECT_DIR$/application/modules/Internal/controllers/Home/Getimagetoken.php" />
     </list>
     <ignored path="youqu.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -31,49 +25,31 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Curl.php" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Curl.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Curl.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="97">
-              <caret line="333" column="22" selection-start-line="333" selection-start-column="22" selection-end-line="333" selection-end-column="22" />
+            <state relative-caret-position="112">
+              <caret line="423" column="16" selection-start-line="423" selection-start-column="16" selection-end-line="423" selection-end-column="16" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Modify.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Modify.php">
+      <file leaf-file-name="Getimagetoken.php" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Home/Getimagetoken.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-135">
-              <caret line="56" column="59" selection-start-line="56" selection-start-column="59" selection-end-line="56" selection-end-column="59" />
+            <state relative-caret-position="630">
+              <caret line="45" column="40" selection-start-line="45" selection-start-column="40" selection-end-line="45" selection-end-column="40" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Blog.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/application/models/Blog/Blog.php">
+      <file leaf-file-name="Image.php" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/application/library/Qiniu/Image.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="196">
-              <caret line="380" column="46" selection-start-line="380" selection-start-column="41" selection-end-line="380" selection-end-column="46" />
-              <folding>
-                <marker date="1471761792000" expanded="true" signature="5974:6091" ph="insert into blog_action_count... " />
-                <marker date="1471761792000" expanded="true" signature="6144:6261" ph="insert into blog_action_count... " />
-                <marker date="1471761792000" expanded="true" signature="7686:7817" ph="insert into blog_comment_action_count... " />
-                <marker date="1471761792000" expanded="true" signature="7869:8000" ph="insert into blog_comment_action_count... " />
-                <marker date="1471761792000" expanded="true" signature="12137:12353" ph="select a.bid... blog" />
-                <marker date="1471761792000" expanded="true" signature="29283:29342" ph="update blog " />
-                <marker date="1471761792000" expanded="true" signature="29426:29512" ph="delete from " />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Postblogreply.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Postblogreply.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="450">
-              <caret line="39" column="26" selection-start-line="25" selection-start-column="24" selection-end-line="39" selection-end-column="26" />
+            <state relative-caret-position="120">
+              <caret line="11" column="18" selection-start-line="11" selection-start-column="18" selection-end-line="11" selection-end-column="18" />
               <folding />
             </state>
           </provider>
@@ -117,14 +93,14 @@
         <option value="$PROJECT_DIR$/application/modules/Internal/controllers/Home/getImgToken.php" />
         <option value="$PROJECT_DIR$/application/modules/Internal/controllers/Home/getImageToken.php" />
         <option value="$PROJECT_DIR$/application/modules/Internal/controllers/Home/GetImageToken.php" />
-        <option value="$PROJECT_DIR$/application/modules/Internal/controllers/Home/Getimagetoken.php" />
         <option value="$PROJECT_DIR$/application/library/Qiniu/Image.php" />
         <option value="$PROJECT_DIR$/conf/sprintf.ini" />
         <option value="$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Postblog.php" />
         <option value="$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Postblogreply.php" />
         <option value="$PROJECT_DIR$/application/models/Blog/Blog.php" />
-        <option value="$PROJECT_DIR$/application/modules/Internal/controllers/Curl.php" />
         <option value="$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Modify.php" />
+        <option value="$PROJECT_DIR$/application/modules/Internal/controllers/Curl.php" />
+        <option value="$PROJECT_DIR$/application/modules/Internal/controllers/Home/Getimagetoken.php" />
       </list>
     </option>
   </component>
@@ -139,7 +115,7 @@
   </component>
   <component name="PhpWorkspaceProjectConfiguration" backward_compatibility_performed="true" />
   <component name="ProjectFrameBounds">
-    <option name="x" value="111" />
+    <option name="x" value="164" />
     <option name="y" value="23" />
     <option name="width" value="1132" />
     <option name="height" value="709" />
@@ -191,11 +167,11 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane />
       </pane>
       <pane id="Scope" />
-      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -302,21 +278,24 @@
       <workItem from="1471756053568" duration="1677000" />
       <workItem from="1471757881705" duration="120000" />
       <workItem from="1471758116786" duration="3956000" />
+      <workItem from="1471857174992" duration="65000" />
+      <workItem from="1471857356868" duration="13000" />
+      <workItem from="1471859111042" duration="709000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="52204000" />
+    <option name="totallyTimeSpent" value="52991000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="111" y="23" width="1132" height="709" extended-state="0" />
+    <frame x="164" y="23" width="1132" height="709" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.16166078" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2091743" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32879376" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.328125" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3273906" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -607,20 +586,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/application/library/Qiniu/Image.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-27">
-          <caret line="17" column="37" selection-start-line="17" selection-start-column="37" selection-end-line="17" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Home/Getimagetoken.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="23" column="42" selection-start-line="23" selection-start-column="42" selection-end-line="23" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Index.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -639,7 +604,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="483">
           <caret line="99" column="56" selection-start-line="97" selection-start-column="24" selection-end-line="99" selection-end-column="56" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -647,13 +611,12 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
           <caret line="13" column="27" selection-start-line="13" selection-start-column="27" selection-end-line="13" selection-end-column="27" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Postblogreply.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
+        <state relative-caret-position="540">
           <caret line="39" column="26" selection-start-line="25" selection-start-column="24" selection-end-line="39" selection-end-column="26" />
           <folding />
         </state>
@@ -661,7 +624,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/application/models/Blog/Blog.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="196">
+        <state relative-caret-position="5655">
           <caret line="380" column="46" selection-start-line="380" selection-start-column="41" selection-end-line="380" selection-end-column="46" />
           <folding>
             <marker date="1471761792000" expanded="true" signature="5974:6091" ph="insert into blog_action_count... " />
@@ -677,7 +640,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Blog/Modify.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-135">
+        <state relative-caret-position="795">
           <caret line="56" column="59" selection-start-line="56" selection-start-column="59" selection-end-line="56" selection-end-column="59" />
           <folding />
         </state>
@@ -685,8 +648,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Curl.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="97">
-          <caret line="333" column="22" selection-start-line="333" selection-start-column="22" selection-end-line="333" selection-end-column="22" />
+        <state relative-caret-position="112">
+          <caret line="423" column="16" selection-start-line="423" selection-start-column="16" selection-end-line="423" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/application/library/Qiniu/Image.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="11" column="18" selection-start-line="11" selection-start-column="18" selection-end-line="11" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/application/modules/Internal/controllers/Home/Getimagetoken.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="630">
+          <caret line="45" column="40" selection-start-line="45" selection-start-column="40" selection-end-line="45" selection-end-column="40" />
           <folding />
         </state>
       </provider>
